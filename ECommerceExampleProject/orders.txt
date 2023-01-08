@@ -1,0 +1,1 @@
+[{"id":230108000,"cid":0,"basketItems":[{"id":0,"Name":"Auto Offering","Quantity":11,"TotalPrice":10.0,"EffectiveDate":"2022-12-22T00:00:00+01:00","Status":"auf lager","Product":{"id":0,"Name":"Stift","Color":"Rot","Description":"Bester Stift der Welt","Price":14}}],"orderDate":"2023-01-08T16:14:33.9549159+01:00","status":"open"}]

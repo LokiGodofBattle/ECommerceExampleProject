@@ -1,6 +1,8 @@
 ﻿using Confluent.Kafka;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
+using System.Security.Cryptography;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -72,6 +74,26 @@ namespace ECommerceExampleProject.Controllers
             GlobalData.customers.Add(new Customer { id = id, name = name, shoppingBasket = new List<Offering>() });
             GlobalData.writeJson();
             GlobalData.readJson();
+        }
+
+        [HttpPost("placeOrder/{id}")]
+        public void PostOrder(int id)
+        {
+            var producerConfig = new ProducerConfig
+            {
+                BootstrapServers = "192.168.178.141:9092"
+            };
+
+            // Create a new producer
+            using (var producer = new ProducerBuilder<Null, string>(producerConfig).Build())
+            {
+                Customer customer = GlobalData.customers.First(value => value.id == id);
+                DateTime date = DateTime.Now;
+                int preId = ((date.Year-2000) * 10000 + date.Month * 100 + date.Day) * 1000 + id;
+                var result = producer.ProduceAsync("order_data", new Message<Null, string> { Value = JsonConvert.SerializeObject(new Order { id = preId, cid = id, status = "open", orderDate = DateTime.Now, basketItems = customer.shoppingBasket}) }).Result;
+                producer.Flush();
+            }
+
         }
     }
 }
