@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -10,7 +11,7 @@ namespace ECommerceExampleProject.Controllers
     public class CustomerController : ControllerBase
     {
         // GET: api/<CustomerController>
-        [HttpGet]
+        [HttpGet("getAllOfferings")]
         public string Get()
         {
             var producerConfig = new ProducerConfig
@@ -25,39 +26,52 @@ namespace ECommerceExampleProject.Controllers
                 producer.Flush();
             }
 
-            while (GlobalData.offerings == "")
+            while (GlobalData.offeringsString == "")
             {
                 // Wait for 500 milliseconds
                 Thread.Sleep(500);
             }
 
 
-            return GlobalData.offerings;
+            return GlobalData.offeringsString;
         }
 
         // GET api/<CustomerController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("getShoppingBasketItems/{cid}")]
+        public string Get(int cid)
         {
-            return "value";
+            Customer customer = GlobalData.customers.First(value => value.id == cid);
+
+            return JsonConvert.SerializeObject(customer.shoppingBasket);
         }
 
-        // POST api/<CustomerController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpPost("addToCart/{cid}/{oid}")]
+        public void Post(int cid, int oid)
         {
+            Customer customer = GlobalData.customers.First(value => value.id == cid);
+            Offering offering = GlobalData.offerings.First(value => value.id == oid);
+            customer.shoppingBasket.Add(offering);
+            GlobalData.writeJson();
+            GlobalData.readJson();
+        }
+
+        [HttpDelete("removeFromCart/{cid}/{oid}")]
+        public void Delete(int cid, int oid)
+        {
+            Customer customer = GlobalData.customers.First(value => value.id == cid);
+            Offering offering = customer.shoppingBasket.First(value => value.id == oid);
+            customer.shoppingBasket.Remove(offering);
+            GlobalData.writeJson();
+            GlobalData.readJson();
         }
 
         // PUT api/<CustomerController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPost("createCustomer/{id}/{name}")]
+        public void Post(int id, string name)
         {
-        }
-
-        // DELETE api/<CustomerController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            GlobalData.customers.Add(new Customer { id = id, name = name, shoppingBasket = new List<Offering>() });
+            GlobalData.writeJson();
+            GlobalData.readJson();
         }
     }
 }

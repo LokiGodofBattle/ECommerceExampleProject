@@ -1,0 +1,1 @@
+[{"id":0,"name":"Luca","shoppingBasket":[{"id":0,"Name":"Auto Offering","Quantity":11,"TotalPrice":10.0,"EffectiveDate":"2022-12-22T00:00:00+01:00","Status":"auf lager","Product":{"id":0,"Name":"Stift","Color":"Rot","Description":"Bester Stift der Welt","Price":14}}]},{"id":1,"name":"Stefan","shoppingBasket":[]},{"id":2,"name":"Marc Kevin","shoppingBasket":[]}]

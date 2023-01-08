@@ -3,12 +3,47 @@ using System.Collections.Generic;
 using System.Threading;
 using Confluent.Kafka;
 using System.Net.Http;
-
-
-
+using ECommerceExampleProject;
+using Newtonsoft.Json;
 
 public static class GlobalData{
-    public static string offerings = "";
+
+    public static string offeringsString = "";
+
+    public static List<Customer> customers = loadCustomers();
+    public static List<Offering> offerings = loadOfferings();
+
+    public static List<Customer> loadCustomers()
+    {
+        string filePath = "customers.txt";
+
+        string jsonString = File.ReadAllText(filePath);
+
+        if(jsonString != null && jsonString != "") return JsonConvert.DeserializeObject<List<Customer>>(jsonString);
+        else return new List<Customer>();
+    }
+    public static List<Offering> loadOfferings()
+    {
+        string filePath = "offerings.txt";
+
+        string jsonString = File.ReadAllText(filePath);
+
+        if (jsonString != null && jsonString != "") return JsonConvert.DeserializeObject<List<Offering>>(jsonString);
+        else return new List<Offering>();
+    }
+
+    public static void readJson()
+    {
+        customers = loadCustomers();
+        offerings = loadOfferings();
+    }
+
+    public static void writeJson()
+    {
+        File.WriteAllText("customers.txt", JsonConvert.SerializeObject(customers));
+        File.WriteAllText("offerings.txt", JsonConvert.SerializeObject(offerings));
+    }
+
 }
 
 class CustomerService
@@ -43,7 +78,7 @@ class CustomerService
                         {
                             // Poll for new messages
                             var message = consumer.Consume(cts.Token);
-                            GlobalData.offerings = message.Message.Value;
+                            GlobalData.offeringsString = message.Message.Value;
                         }
                     }
                     catch (OperationCanceledException)
