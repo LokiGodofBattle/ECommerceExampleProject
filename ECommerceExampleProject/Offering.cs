@@ -6,5 +6,5 @@
         public float TotalPrice { get; set; }
         public DateTime EffectiveDate  { get; set; }
         public string Status { get; set; }
-        public Product Product { get; set; }
+        public int productID { get; set; }
 }

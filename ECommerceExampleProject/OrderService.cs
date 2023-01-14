@@ -20,6 +20,7 @@ public static class OrderData{
         else return new List<Order>();
     }
 
+
     public static void writeJson()
     {
         File.WriteAllText("orders.txt", JsonConvert.SerializeObject(orders));
@@ -41,7 +42,7 @@ class OrderService
         {
             var consumerConfig = new ConsumerConfig
             {
-                BootstrapServers = "192.168.178.141:9092",
+                BootstrapServers = GlobalData.ip,
                 GroupId = "order",
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
@@ -74,8 +75,46 @@ class OrderService
             }
         });
 
+        Thread paymentThread = new Thread(() =>
+        {
+            var consumerConfig = new ConsumerConfig
+            {
+                BootstrapServers = GlobalData.ip,
+                GroupId = "payment",
+                AutoOffsetReset = AutoOffsetReset.Earliest
+            };
+
+            // Create a cancellation token to stop the consumer when needed
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+
+            using (var consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build())
+            {
+                // Subscribe to the topic
+                consumer.Subscribe("payment");
+
+                try
+                {
+                    // Run the consumer loop
+                    while (true)
+                    {
+                        // Poll for new messages
+                        var message = consumer.Consume(cts.Token);
+                        OrderData.orders.First(o => o.id == Convert.ToInt32(message.Value)).status = "paid";
+                        OrderData.writeJson();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Stop the consumer when the cancellation token is canceled
+                    consumer.Close();
+                }
+            }
+        });
+
         // Start the consumer thread
         consumerThread.Start();
+        paymentThread.Start();
 
     }
 }

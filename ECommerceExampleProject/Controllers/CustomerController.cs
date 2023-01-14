@@ -18,7 +18,7 @@ namespace ECommerceExampleProject.Controllers
         {
             var producerConfig = new ProducerConfig
             {
-                BootstrapServers = "192.168.178.141:9092"
+                BootstrapServers = GlobalData.ip
             };
 
             // Create a new producer
@@ -50,6 +50,27 @@ namespace ECommerceExampleProject.Controllers
         [HttpPost("addToCart/{cid}/{oid}")]
         public void Post(int cid, int oid)
         {
+            if (GlobalData.offerings.Count == 0)
+            {
+                var producerConfig = new ProducerConfig
+                {
+                    BootstrapServers = GlobalData.ip
+                };
+
+                // Create a new producer
+                using (var producer = new ProducerBuilder<Null, string>(producerConfig).Build())
+                {
+                    var result = producer.ProduceAsync("offerings", new Message<Null, string> { Value = "cno" }).Result;
+                    producer.Flush();
+                }
+
+                while (GlobalData.offeringsString == "")
+                {
+                    // Wait for 500 milliseconds
+                    Thread.Sleep(500);
+                }
+            }
+
             Customer customer = GlobalData.customers.First(value => value.id == cid);
             Offering offering = GlobalData.offerings.First(value => value.id == oid);
             customer.shoppingBasket.Add(offering);
@@ -81,7 +102,7 @@ namespace ECommerceExampleProject.Controllers
         {
             var producerConfig = new ProducerConfig
             {
-                BootstrapServers = "192.168.178.141:9092"
+                BootstrapServers = GlobalData.ip
             };
 
             // Create a new producer

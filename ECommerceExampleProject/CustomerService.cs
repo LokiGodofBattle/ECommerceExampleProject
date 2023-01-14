@@ -9,9 +9,10 @@ using Newtonsoft.Json;
 public static class GlobalData{
 
     public static string offeringsString = "";
+    public static List<Offering> offerings = new List<Offering>();
+    public static string ip = "192.168.178.141:9092";
 
     public static List<Customer> customers = loadCustomers();
-    public static List<Offering> offerings = loadOfferings();
 
     public static List<Customer> loadCustomers()
     {
@@ -22,26 +23,15 @@ public static class GlobalData{
         if(jsonString != null && jsonString != "") return JsonConvert.DeserializeObject<List<Customer>>(jsonString);
         else return new List<Customer>();
     }
-    public static List<Offering> loadOfferings()
-    {
-        string filePath = "offerings.txt";
-
-        string jsonString = File.ReadAllText(filePath);
-
-        if (jsonString != null && jsonString != "") return JsonConvert.DeserializeObject<List<Offering>>(jsonString);
-        else return new List<Offering>();
-    }
 
     public static void readJson()
     {
         customers = loadCustomers();
-        offerings = loadOfferings();
     }
 
     public static void writeJson()
     {
         File.WriteAllText("customers.txt", JsonConvert.SerializeObject(customers));
-        File.WriteAllText("offerings.txt", JsonConvert.SerializeObject(offerings));
     }
 
 }
@@ -57,7 +47,7 @@ class CustomerService
             {
                 var consumerConfig = new ConsumerConfig
                 {
-                    BootstrapServers = "192.168.178.141:9092",
+                    BootstrapServers = GlobalData.ip,
                     GroupId = "customer",
                     AutoOffsetReset = AutoOffsetReset.Earliest
                 };
@@ -78,7 +68,8 @@ class CustomerService
                         {
                             // Poll for new messages
                             var message = consumer.Consume(cts.Token);
-                            GlobalData.offeringsString = message.Message.Value;
+                            GlobalData.offeringsString = message.Value;
+                            GlobalData.offerings = JsonConvert.DeserializeObject<List<Offering>>(message.Value);
                         }
                     }
                     catch (OperationCanceledException)

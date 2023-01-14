@@ -5,19 +5,47 @@ using Confluent.Kafka;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.IO;
+using ECommerceExampleProject;
+
+public static class OfferingsData
+{
+    public static List<Offering> offerings = loadOfferings();
+    public static List<Product> products = loadProducts();
+
+    public static List<Offering> loadOfferings()
+    {
+        string filePath = "offerings.txt";
+
+        string jsonString = File.ReadAllText(filePath);
+
+        if (jsonString != null && jsonString != "") return JsonConvert.DeserializeObject<List<Offering>>(jsonString);
+        else return new List<Offering>();
+    }
+
+    public static List<Product> loadProducts()
+    {
+        string filePath = "products.txt";
+
+        string jsonString = File.ReadAllText(filePath);
+
+        if (jsonString != null && jsonString != "") return JsonConvert.DeserializeObject<List<Product>>(jsonString);
+        else return new List<Product>();
+    }
+    public static void writeJson()
+    {
+        File.WriteAllText("offerings.txt", JsonConvert.SerializeObject(offerings));
+        File.WriteAllText("products.txt", JsonConvert.SerializeObject(products));
+    }
+
+    public static void readJson()
+    {
+        offerings = loadOfferings();
+       products = loadProducts();
+    }
+}
 
 class OfferingsService
     {
-        public static Offering[] loadOfferings(){
-            string filePath = "offerings.txt";
-
-            string jsonString = File.ReadAllText(filePath);
-
-            // Deserialize the JSON string into an object
-            Offering[] jsonObject = JsonConvert.DeserializeObject<Offering[]>(jsonString);
-
-            return jsonObject;
-        }
 
         public static void StartService()
         {
@@ -31,7 +59,7 @@ class OfferingsService
             {
                 var consumerConfig = new ConsumerConfig
                 {
-                    BootstrapServers = "192.168.178.141:9092",
+                    BootstrapServers = GlobalData.ip,
                     GroupId = "offerings",
                     AutoOffsetReset = AutoOffsetReset.Earliest
                 };
@@ -55,12 +83,13 @@ class OfferingsService
                             if(message.Message.Value == "cno"){
                                 var producerConfig = new ProducerConfig
                                 {
-                                    BootstrapServers = "192.168.178.141:9092"
+                                    BootstrapServers = GlobalData.ip
                                 };
 
                                 // Create a new producer
                                 using (var producer = new ProducerBuilder<Null, string>(producerConfig).Build()){
-                                    var result = producer.ProduceAsync("offerings_data", new Message<Null, string> { Value = JsonConvert.SerializeObject(loadOfferings()) }).Result;
+                                    OfferingsData.readJson();
+                                    var result = producer.ProduceAsync("offerings_data", new Message<Null, string> { Value = JsonConvert.SerializeObject(OfferingsData.offerings) }).Result;
                                     producer.Flush();
                                 }
                             }

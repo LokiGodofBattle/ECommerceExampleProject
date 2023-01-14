@@ -10,6 +10,7 @@ builder.Services.AddSwaggerGen();
 OfferingsService.StartService();
 CustomerService.StartService();
 OrderService.StartService();
+OrderArchivingService.StartService();
 
 var app = builder.Build();
 

@@ -1,3 +1,1 @@
-[1, "Pencil", "black", "Faber Castell Limited Edition HB", 4.95]
-[2, "Toaster", "gray", "Miele Toaster Deluxe 600W", 49.9]
-[3, "Jacket", "red", "Hally Hanson best Down", 109.99]
+[{"id":1,"Name":"Pencil","Color":"black","Description":"Faber Castell Limited Edition HB","Price":4.95},{"id":2,"Name":"Toaster","Color":"gray","Description":"Miele Toaster Deluxe 600W","Price":49.9},{"id":3,"Name":"Jacket","Color":"red","Description":"Hally Hanson best Down","Price":109.99},{"id":4,"Name":"Tasse","Color":"Weiß","Description":"Tasse mit einem Hund als Motiv","Price":14.99}]
